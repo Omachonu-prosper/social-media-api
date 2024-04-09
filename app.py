@@ -1,10 +1,5 @@
-from flask import Flask, jsonify
+from api import create_app
 
-app = Flask(__name__)
-
-@app.route('/', strict_slashes=False)
-def home():
-    return jsonify({
-        'message': 'You have hit the index route',
-        'status': True,
-    }), 200
+app = create_app()
+if __name__ == '__main__':
+    app.run()
