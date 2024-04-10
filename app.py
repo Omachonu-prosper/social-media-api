@@ -4,6 +4,8 @@ from config import Config
 app = create_app()
 if __name__ == '__main__':
     if Config.APP_ENV.lower() == 'production':
-        app.run()
+        debug = False
     else:
-        app.run(debug=True)
+        debug = True
+
+    app.run(debug=debug)
