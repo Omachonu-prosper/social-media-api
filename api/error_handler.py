@@ -2,7 +2,7 @@ from flask import jsonify
 
 """
 The errors currently handled include
-    400, 404, 401, 405, 500
+    400, 404, 401, 405, 500, 415
 
 The above list should be updated if an error handler is aded or removed
 """
@@ -40,3 +40,10 @@ def server_error(e):
         'message': 'internal server error: an unexpected error occured',
         'status': False
     }), 500
+
+
+def unsupported_media_type(e):
+    return jsonify({
+        'message': 'unsupported media type: Content-Type must be application/json',
+        'status': False
+    }), 415

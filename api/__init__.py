@@ -17,5 +17,6 @@ def create_app():
     app.register_error_handler(401, error.unauthorised)
     app.register_error_handler(405, error.method_not_allowed)
     app.register_error_handler(500, error.server_error)
+    app.register_error_handler(415, error.unsupported_media_type)
 
     return app
