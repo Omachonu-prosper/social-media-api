@@ -1,6 +1,7 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, session
 from flask_bcrypt import generate_password_hash
 from api.api_key import api_key_required
+from api.login_required import login_required
 from utils.db import users
 from utils.request_parser import Parser
 
@@ -47,3 +48,10 @@ def signup_user():
         'message': 'user created successfully',
         'status': True
     }), 200
+
+
+@auth.route('/api/v1/user/login', methods=['POST'], strict_slashes=False)
+@api_key_required
+def login():
+    session['user'] = 'new user'
+    return 'ok'
