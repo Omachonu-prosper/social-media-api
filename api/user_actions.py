@@ -1,8 +1,10 @@
 from flask import Blueprint, jsonify, request, session
 from api.middlewares import api_key_required, login_required
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from uuid import uuid4
 from utils.db import users, posts
+from utils.helpers import follow, unfollow
 from utils.request_parser import Parser
 
 """All user interactions such as
@@ -40,5 +42,43 @@ def create_post():
 
     return jsonify({
         'message': 'post created successfully',
+        'status': True
+    }), 200
+
+
+@actions.route('/api/v1/user/follow/<user_id>', methods=['POST'], strict_slashes=False)
+@api_key_required
+@login_required
+def follow_user(user_id):
+    executor = ThreadPoolExecutor()
+    # Verify the user_id
+    if not users.find_one({'uid': user_id}):
+        return jsonify({
+            'message': 'the user id provided was not found',
+            'status': True
+        }), 404
+    
+    executor.submit(follow, user_id, session['user_id'])
+    return jsonify({
+        'message': 'follow operation successful',
+        'status': True
+    }), 200
+
+
+@actions.route('/api/v1/user/unfollow/<user_id>', methods=['POST'], strict_slashes=False)
+@api_key_required
+@login_required
+def unfollow_user(user_id):
+    executor = ThreadPoolExecutor()
+    # Verify the user_id
+    if not users.find_one({'uid': user_id}):
+        return jsonify({
+            'message': 'the user id provided was not found',
+            'status': True
+        }), 404
+    
+    executor.submit(unfollow, user_id, session['user_id'])
+    return jsonify({
+        'message': 'unfollow operation successful',
         'status': True
     }), 200
