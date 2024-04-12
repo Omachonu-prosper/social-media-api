@@ -13,6 +13,7 @@ from utils.request_parser import Parser
     - fetching post feed from the users they follow
     - fetching post feed from other users (fyp)
     - liking a post
+    - unlinking
 """
 
 actions = Blueprint('actions', __name__)
@@ -200,5 +201,38 @@ def unlike_post(post_id):
     unlike_a_post(post_id, user_id)
     return jsonify({
         'message': 'unlike operation successful',
+        'status': True
+    }), 200
+
+
+@actions.route('/api/v1/post/<post_id>/comment/new', methods=['POST'], strict_slashes=False)
+@api_key_required
+@login_required
+def new_comment(post_id):
+    parser = Parser(request.json)
+    current_user = session['user_id']
+    parser.add_item('text', True, 'text field can not be left blank')
+    if not parser.valid:
+        return parser.generate_errors(
+            'bad request: check the errors field for details on the error',
+            400
+        )
+    
+    data = parser.get_items()
+    text = data['text']
+    post = posts.update_one(
+        {'pid': post_id},
+        {'$push': {'comments': {
+                'text': text, 'uid': current_user
+        }}}
+    )
+    if not post.matched_count:
+        return jsonify({
+            'message': 'post id not found',
+            'status': False
+        }), 404
+    
+    return jsonify({
+        'message': 'comment operation successful',
         'status': True
     }), 200
