@@ -117,10 +117,38 @@ def view_following_feed():
         {'uid': {'$in': following}},
         {'_id': 0}
     ).sort({'created_at': 1}))
+    if not following_posts:
+        return jsonify({
+            'message': 'no posts could be fetched at the moment',
+            'status': False
+        }), 404
     
     return jsonify({
         'message': 'fetched your news feed successfully',
         'data': following_posts,
+        'status': True
+    }), 200
+
+
+@actions.route('/api/v1/user/feed/fyp', strict_slashes=False)
+@api_key_required
+@login_required
+def view_fyp_feed():
+    # Fetch all posts except those of the current user and sort by date
+    current_user_id = session['user_id']
+    fyp_posts = list(posts.find(
+        {'uid': {'$ne': current_user_id}},
+        {'_id': 0}
+    ).sort({'created_at': 1}))
+    if not fyp_posts:
+        return jsonify({
+            'message': 'no posts could be fetched at the moment',
+            'status': False
+        }), 404
+    
+    return jsonify({
+        'message': 'fetched your news feed successfully',
+        'data': fyp_posts,
         'status': True
     }), 200
     
