@@ -1,4 +1,5 @@
 from flask import Blueprint, jsonify, request, session
+from uuid import uuid4
 from flask_bcrypt import generate_password_hash
 from api.middlewares import api_key_required
 from utils.db import users
@@ -38,6 +39,7 @@ def signup_user():
         }), 409
     
     user = users.insert_one({
+        'uid': str(uuid4()),
         'username': username,
         'email': email,
         'password': password
