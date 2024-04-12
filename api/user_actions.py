@@ -55,7 +55,7 @@ def follow_user(user_id):
     if not users.find_one({'uid': user_id}):
         return jsonify({
             'message': 'the user id provided was not found',
-            'status': True
+            'status': False
         }), 404
 
     if session['user_id'] == user_id:
@@ -80,7 +80,7 @@ def unfollow_user(user_id):
     if not users.find_one({'uid': user_id}):
         return jsonify({
             'message': 'the user id provided was not found',
-            'status': True
+            'status': False
         }), 404
 
     if session['user_id'] == user_id:
@@ -94,3 +94,33 @@ def unfollow_user(user_id):
         'message': 'unfollow operation successful',
         'status': True
     }), 200
+
+
+@actions.route('/api/v1/user/feed/following', strict_slashes=False)
+@api_key_required
+@login_required
+def view_following_feed():
+    # Fetch all the users that the current user follows
+    current_user_id = session['user_id']
+    following = list(users.find(
+        {'uid': current_user_id},
+        {'following': 1, '_id': 0}
+    ))[0].get('following')
+    if not following:
+        # The current user doesnt follow anyone
+        return jsonify({
+            'message': 'no posts in your following because you do not currently follow anyone',
+            'status': False
+        }), 404
+
+    following_posts = list(posts.find(
+        {'uid': {'$in': following}},
+        {'_id': 0}
+    ).sort({'created_at': 1}))
+    
+    return jsonify({
+        'message': 'fetched your news feed successfully',
+        'data': following_posts,
+        'status': True
+    }), 200
+    
