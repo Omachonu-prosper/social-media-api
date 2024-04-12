@@ -222,9 +222,12 @@ def new_comment(post_id):
     text = data['text']
     post = posts.update_one(
         {'pid': post_id},
-        {'$push': {'comments': {
+        {
+            '$push': {'comments': {
                 'text': text, 'uid': current_user
-        }}}
+            }},
+            '$inc': {'comments_count': 1}
+        }
     )
     if not post.matched_count:
         return jsonify({
