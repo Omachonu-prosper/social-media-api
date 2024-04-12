@@ -64,4 +64,14 @@ def like_a_post(post_id, user_id):
             {'$push': {'likes': user_id}, '$inc': {'likes_count': 1}}
         )
     except Exception as e:
+        print(f'An error occured\n {e}') # Propper logging to be implemented soon
+
+
+def unlike_a_post(post_id, user_id):
+    try:
+        posts.update_one(
+            {'pid': post_id},
+            {'$pull': {'likes': user_id}, '$inc': {'likes_count': -1}}
+        )
+    except Exception as e:
         print(f'An error occured\n {e}') # Propper logging to be implemented soon  

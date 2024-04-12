@@ -4,7 +4,7 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from uuid import uuid4
 from utils.db import users, posts
-from utils.helpers import follow, unfollow, like_a_post
+from utils.helpers import follow, unfollow, like_a_post, unlike_a_post
 from utils.request_parser import Parser
 
 """All user interactions such as
@@ -175,5 +175,30 @@ def like_post(post_id):
     like_a_post(post_id, user_id)
     return jsonify({
         'message': 'like operation successful',
+        'status': True
+    }), 200
+
+
+@actions.route('/api/v1/posts/<post_id>/unlike', methods=['POST'], strict_slashes=False)
+@api_key_required
+@login_required
+def unlike_post(post_id):
+    user_id = session['user_id']
+    post = posts.find_one({'pid': post_id})
+    if not post:
+        return jsonify({
+            'message': 'the post id does not match any post in the database',
+            'status': False
+        }), 404
+    
+    if not posts.find_one({'pid': post_id, 'likes': user_id}):
+        return jsonify({
+            'message': 'you can not unlike a post that you have not previously liked',
+            'status': False
+        }), 403
+    
+    unlike_a_post(post_id, user_id)
+    return jsonify({
+        'message': 'unlike operation successful',
         'status': True
     }), 200
