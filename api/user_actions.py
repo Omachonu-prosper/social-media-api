@@ -57,6 +57,12 @@ def follow_user(user_id):
             'message': 'the user id provided was not found',
             'status': True
         }), 404
+
+    if session['user_id'] == user_id:
+        return jsonify({
+            'message': 'you can not follow yourself',
+            'status': False
+        }), 409
     
     executor.submit(follow, user_id, session['user_id'])
     return jsonify({
@@ -76,6 +82,12 @@ def unfollow_user(user_id):
             'message': 'the user id provided was not found',
             'status': True
         }), 404
+
+    if session['user_id'] == user_id:
+        return jsonify({
+            'message': 'you can not unfollow yourself',
+            'status': False
+        }), 409
     
     executor.submit(unfollow, user_id, session['user_id'])
     return jsonify({
