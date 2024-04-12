@@ -1,6 +1,10 @@
 from functools import wraps
-from flask import jsonify, request
+from flask import jsonify, request, session
 from config import Config
+
+"""All app middlewares that get run before the endpoint logic go here
+"""
+
 
 def api_key_required(f):
     @wraps(f)
@@ -20,3 +24,16 @@ def api_key_required(f):
         
         return f(*args, **kwargs)
     return wrapper 
+
+
+def login_required(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        if not session.get('user'):
+            return jsonify({
+                'message': 'unauthorized: you have to be logged in to access this endpoint',
+                'status': False
+            }), 401
+        
+        return f(*args, **kwargs)
+    return wrapper

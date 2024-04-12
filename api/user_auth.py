@@ -1,7 +1,6 @@
 from flask import Blueprint, jsonify, request, session
 from flask_bcrypt import generate_password_hash
-from api.api_key import api_key_required
-from api.login_required import login_required
+from api.middlewares import api_key_required
 from utils.db import users
 from utils.request_parser import Parser
 
