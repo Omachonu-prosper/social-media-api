@@ -1,4 +1,5 @@
-from utils.db import users
+from utils.db import users, posts
+
 """All helper functions that perform tasks to free up route definitions
 """
 
@@ -54,3 +55,13 @@ def unfollow(unfollowed, unfollower):
         return True
     except:
         print('An error occured') # Propper logging to be implemented soon   
+
+
+def like_a_post(post_id, user_id):
+    try:
+        posts.update_one(
+            {'pid': post_id},
+            {'$push': {'likes': user_id}, '$inc': {'likes_count': 1}}
+        )
+    except Exception as e:
+        print(f'An error occured\n {e}') # Propper logging to be implemented soon  

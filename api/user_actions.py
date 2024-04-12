@@ -4,7 +4,7 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from uuid import uuid4
 from utils.db import users, posts
-from utils.helpers import follow, unfollow
+from utils.helpers import follow, unfollow, like_a_post
 from utils.request_parser import Parser
 
 """All user interactions such as
@@ -12,6 +12,7 @@ from utils.request_parser import Parser
     - following other users
     - fetching post feed from the users they follow
     - fetching post feed from other users (fyp)
+    - liking a post
 """
 
 actions = Blueprint('actions', __name__)
@@ -62,7 +63,7 @@ def follow_user(user_id):
         return jsonify({
             'message': 'you can not follow yourself',
             'status': False
-        }), 409
+        }), 403
     
     executor.submit(follow, user_id, session['user_id'])
     return jsonify({
@@ -87,7 +88,7 @@ def unfollow_user(user_id):
         return jsonify({
             'message': 'you can not unfollow yourself',
             'status': False
-        }), 409
+        }), 403
     
     executor.submit(unfollow, user_id, session['user_id'])
     return jsonify({
@@ -152,3 +153,27 @@ def view_fyp_feed():
         'status': True
     }), 200
     
+
+@actions.route('/api/v1/posts/<post_id>/like', methods=['POST'], strict_slashes=False)
+@api_key_required
+@login_required
+def like_post(post_id):
+    user_id = session['user_id']
+    post = posts.find_one({'pid': post_id})
+    if not post:
+        return jsonify({
+            'message': 'the post id does not match any post in the database',
+            'status': False
+        }), 404
+    
+    if posts.find_one({'pid': post_id, 'likes': user_id}):
+        return jsonify({
+            'message': 'you can not like a post more than once',
+            'status': False
+        }), 403
+    
+    like_a_post(post_id, user_id)
+    return jsonify({
+        'message': 'like operation successful',
+        'status': True
+    }), 200
