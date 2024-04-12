@@ -25,6 +25,7 @@ def signup_user():
     username = data['username']
     email = data['email']
     password = generate_password_hash(data['password']).decode('utf-8')
+    user_id = str(uuid4())
     
     if users.find_one({'username': username}):
         return jsonify({
@@ -38,13 +39,14 @@ def signup_user():
             'status': False
         }), 409
     
-    user = users.insert_one({
-        'uid': str(uuid4()),
+    users.insert_one({
+        'uid': user_id,
         'username': username,
         'email': email,
         'password': password
     })
 
+    session['user_id'] = user_id
     return jsonify({
         'message': 'user created successfully',
         'status': True
