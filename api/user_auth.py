@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request, session
 from uuid import uuid4
-from flask_bcrypt import generate_password_hash
+from flask_bcrypt import generate_password_hash, check_password_hash
 from api.middlewares import api_key_required
 from utils.db import users
 from utils.request_parser import Parser
@@ -56,5 +56,47 @@ def signup_user():
 @auth.route('/api/v1/user/login', methods=['POST'], strict_slashes=False)
 @api_key_required
 def login():
-    session['user'] = 'new user'
-    return 'ok'
+    parser = Parser(request.json)
+    parser.add_item('email', True, 'email field can not be empty')
+    parser.add_item('password', True, 'password field can not be empty')
+    
+    if not parser.valid:
+        return parser.generate_errors(
+            'bad request: check the errors field for details on the error',
+            400
+        )
+    
+    data = parser.get_items()
+    email = data['email']
+    password = data['password']
+    user = users.find_one({'email': email}, {'_id': 0})
+    
+    if not user:
+        return jsonify({
+            'message': 'no user was found with the provided email address',
+            'status': False
+        }), 404
+    
+    if not check_password_hash(user['password'], password):
+        # Passwords do not match
+        return jsonify({
+            'message': 'unauthorized: incorrect password',
+            'status': False
+        }), 401
+    
+    session['user_id'] = user['uid']
+    return jsonify({
+        'message': 'user login successful',
+        'status': True
+    }), 200
+
+
+@auth.route('/api/v1/user/logout', methods=['POST'], strict_slashes=False)
+@api_key_required
+def logout():
+    session.clear()
+
+    return jsonify({
+        'message': 'user logout successful',
+        'status': True
+    }), 200
