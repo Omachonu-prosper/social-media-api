@@ -265,7 +265,6 @@ def new_comment(post_id):
             'status': False
         }), 404
 
-    print(post)
     notif_user_id = post['uid']
     comment_content = text[0:20]
     notif_content = f'Your post has a new coment "{comment_content}..."'
