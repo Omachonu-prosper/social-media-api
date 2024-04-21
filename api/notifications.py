@@ -6,6 +6,7 @@ from utils.db import notifications
 """User notifications
     - Fetch all notifications
     - Fetch all unread notifications
+    - Get the count of all unread notifications
     - Update a notifications status to read
 """
 
@@ -26,8 +27,15 @@ def fetch_unread_notifications():
     return "In progress"
 
 
+@notifs.route('/api/v1/notifications/count/unread', strict_slashes=False)
+@api_key_required
+@login_required
+def count_unread_notifications():
+    return "In progress"
+
+
 @notifs.route('/api/v1/notifications/update/<nid>', methods=['POST'], strict_slashes=False)
 @api_key_required
 @login_required
-def fetch_unread_notifications(nid):
+def update_notification_status(nid):
     return "In progress"
