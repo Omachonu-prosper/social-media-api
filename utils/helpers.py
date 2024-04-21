@@ -1,4 +1,7 @@
-from utils.db import users, posts
+from utils.db import users, posts, notifications
+from uuid import uuid4
+from datetime import datetime
+
 
 """All helper functions that perform tasks to free up route definitions
 """
@@ -78,3 +81,16 @@ def unlike_a_post(post_id, user_id):
         )
     except Exception as e:
         print(f'An error occured\n {e}') # Propper logging to be implemented soon  
+
+
+def create_notification(content, user_id):
+    try:
+        notifications.insert_one({
+            'text': content,
+            'nid': str(uuid4()),
+            'uid': user_id,
+            'read_status': False,
+            'create_date': datetime.now()
+        })
+    except Exception as e:
+        print(f'An error occured\n {e}') # Propper logging to be implemented soon

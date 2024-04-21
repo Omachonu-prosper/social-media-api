@@ -3,6 +3,7 @@ from flask_session import Session
 from flask_cors import CORS
 from api.user_auth import auth
 from api.user_actions import actions
+from api.notifications import notifs
 
 import api.error_handler as error
 
@@ -16,6 +17,7 @@ def create_app():
     # Register app blueprints
     app.register_blueprint(auth)
     app.register_blueprint(actions)
+    app.register_blueprint(notifs)
 
     # Register error handlers
     app.register_error_handler(400, error.bad_request)

@@ -4,8 +4,9 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from uuid import uuid4
 from utils.db import users, posts
-from utils.helpers import follow, unfollow, like_a_post, unlike_a_post
+from utils.helpers import follow, unfollow, like_a_post, unlike_a_post, create_notification
 from utils.request_parser import Parser
+
 
 """All user interactions such as
     - creating posts
@@ -13,10 +14,11 @@ from utils.request_parser import Parser
     - fetching post feed from the users they follow
     - fetching post feed from other users (fyp)
     - liking a post
-    - unlinking
+    - commenting on a post
 """
 
 actions = Blueprint('actions', __name__)
+
 
 @actions.route('/api/v1/user/post/create', methods=['POST'], strict_slashes=False)
 @api_key_required
@@ -76,6 +78,8 @@ def follow_user(user_id):
         }), 409
     
     executor.submit(follow, user_id, current_user)
+    notification_content = "You have a new follower"
+    executor.submit(create_notification, notification_content, user_id)
     return jsonify({
         'message': 'follow operation successful',
         'status': True
@@ -177,6 +181,7 @@ def view_fyp_feed():
 @api_key_required
 @login_required
 def like_post(post_id):
+    executor = ThreadPoolExecutor()
     user_id = session['user_id']
     post = posts.find_one({'pid': post_id})
     if not post:
@@ -191,7 +196,13 @@ def like_post(post_id):
             'status': False
         }), 403
     
-    like_a_post(post_id, user_id)
+    executor.submit(like_a_post, post_id, user_id)
+    
+    post_owner = post['uid']
+    post_text = post['text'][0:20]
+    notification_content = f'Your post "{post_text}..." has a new like'
+    executor.submit(create_notification, notification_content, post_owner)
+    
     return jsonify({
         'message': 'like operation successful',
         'status': True
@@ -227,6 +238,7 @@ def unlike_post(post_id):
 @api_key_required
 @login_required
 def new_comment(post_id):
+    executor = ThreadPoolExecutor()
     parser = Parser(request.json)
     current_user = session['user_id']
     parser.add_item('text', True, 'text field can not be left blank')
@@ -238,7 +250,7 @@ def new_comment(post_id):
     
     data = parser.get_items()
     text = data['text']
-    post = posts.update_one(
+    post = posts.find_one_and_update(
         {'pid': post_id},
         {
             '$push': {'comments': {
@@ -247,11 +259,17 @@ def new_comment(post_id):
             '$inc': {'comments_count': 1}
         }
     )
-    if not post.matched_count:
+    if not post:
         return jsonify({
             'message': 'post id not found',
             'status': False
         }), 404
+
+    print(post)
+    notif_user_id = post['uid']
+    comment_content = text[0:20]
+    notif_content = f'Your post has a new coment "{comment_content}..."'
+    executor.submit(create_notification, notif_content, notif_user_id)
     
     return jsonify({
         'message': 'comment operation successful',
