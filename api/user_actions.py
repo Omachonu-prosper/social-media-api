@@ -53,6 +53,8 @@ def create_post():
 @login_required
 def follow_user(user_id):
     executor = ThreadPoolExecutor()
+    current_user = session['user_id']
+
     # Verify the user_id
     if not users.find_one({'uid': user_id}):
         return jsonify({
@@ -60,13 +62,20 @@ def follow_user(user_id):
             'status': False
         }), 404
 
-    if session['user_id'] == user_id:
+    if current_user == user_id:
         return jsonify({
             'message': 'you can not follow yourself',
             'status': False
         }), 403
     
-    executor.submit(follow, user_id, session['user_id'])
+    # If you follow the user already
+    if users.find_one({'uid': current_user, 'following': user_id}):
+        return jsonify({
+            'message': 'you already follow this user',
+            'status': False
+        }), 409
+    
+    executor.submit(follow, user_id, current_user)
     return jsonify({
         'message': 'follow operation successful',
         'status': True
@@ -78,6 +87,8 @@ def follow_user(user_id):
 @login_required
 def unfollow_user(user_id):
     executor = ThreadPoolExecutor()
+    current_user = session['user_id']
+
     # Verify the user_id
     if not users.find_one({'uid': user_id}):
         return jsonify({
@@ -85,13 +96,20 @@ def unfollow_user(user_id):
             'status': False
         }), 404
 
-    if session['user_id'] == user_id:
+    if current_user == user_id:
         return jsonify({
             'message': 'you can not unfollow yourself',
             'status': False
         }), 403
     
-    executor.submit(unfollow, user_id, session['user_id'])
+    # If you do not follow the user already
+    if not users.find_one({'uid': current_user, 'following': user_id}):
+        return jsonify({
+            'message': 'you do not follow this user',
+            'status': False
+        }), 409
+    
+    executor.submit(unfollow, user_id, current_user)
     return jsonify({
         'message': 'unfollow operation successful',
         'status': True

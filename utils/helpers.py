@@ -12,19 +12,20 @@ def follow(followed, follower):
         # Add the follower to the followed follower's list
         users.update_one(
             {'uid': followed},
-            {'$push': {
-                "followers": follower
-            }}
+            {
+                '$push': {'followers': follower},
+                '$inc': {'follower_count': 1}
+            }
         )
 
         # Add the followed to the follower's following list
         users.update_one(
             {'uid': follower},
-            {'$push': {
-                "following": followed
-            }}
+            {
+                '$push': {'following': followed},
+                '$inc': {'following_count': 1}
+            }
         )
-
         return True
     except:
         print('An error occured') # Propper logging to be implemented soon   
@@ -39,17 +40,19 @@ def unfollow(unfollowed, unfollower):
         # Remove the unfollower from the unfollowed follower's list
         users.update_one(
             {'uid': unfollowed},
-            {'$pull': {
-                "followers": unfollower
-            }}
+            {
+                '$pull': {'followers': unfollower},
+                '$inc': {'follower_count': -1}
+            }
         )
 
         # Remove the unfollowed from the unfollower's following list
         users.update_one(
             {'uid': unfollower},
-            {'$pull': {
-                "following": unfollowed
-            }}
+            {
+                '$pull': {'following': unfollowed},
+                '$inc': {'following_count': -1}
+            }
         )
 
         return True
