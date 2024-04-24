@@ -47,7 +47,7 @@ def create_post():
     return jsonify({
         'message': 'post created successfully',
         'status': True
-    }), 200
+    }), 201
 
 
 @actions.route('/api/v1/user/follow/<user_id>', methods=['POST'], strict_slashes=False)
@@ -271,6 +271,6 @@ def new_comment(post_id):
     executor.submit(create_notification, notif_content, notif_user_id)
     
     return jsonify({
-        'message': 'comment operation successful',
+        'message': 'comment created successfully',
         'status': True
-    }), 200
+    }), 201

@@ -50,7 +50,7 @@ def signup_user():
     return jsonify({
         'message': 'user created successfully',
         'status': True
-    }), 200
+    }), 201
 
 
 @auth.route('/api/v1/auth/login', methods=['POST'], strict_slashes=False)
