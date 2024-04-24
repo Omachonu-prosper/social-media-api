@@ -7,7 +7,7 @@ from utils.request_parser import Parser
 
 auth = Blueprint('auth', __name__)
 
-@auth.route('/api/v1/user/signup', methods=['POST'], strict_slashes=False)
+@auth.route('/api/v1/auth/signup', methods=['POST'], strict_slashes=False)
 @api_key_required
 def signup_user():
     parser = Parser(request.json)
@@ -53,7 +53,7 @@ def signup_user():
     }), 200
 
 
-@auth.route('/api/v1/user/login', methods=['POST'], strict_slashes=False)
+@auth.route('/api/v1/auth/login', methods=['POST'], strict_slashes=False)
 @api_key_required
 def login():
     parser = Parser(request.json)
@@ -91,7 +91,7 @@ def login():
     }), 200
 
 
-@auth.route('/api/v1/user/logout', methods=['POST'], strict_slashes=False)
+@auth.route('/api/v1/auth/logout', methods=['POST'], strict_slashes=False)
 @api_key_required
 def logout():
     session.clear()
