@@ -9,10 +9,12 @@ Flask-Bcrypt
 Flask-Cors
 Flask-JWT-Extended
 Flask-Session
+gunicorn
 itsdangerous
 Jinja2
 MarkupSafe
 msgspec
+packaging
 PyJWT
 pymongo
 python-dotenv
